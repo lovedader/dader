@@ -6,56 +6,167 @@
     <title>情感語錄 - 投稿</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(135deg, #fff0eb, #ffdcd1, #ffc4b3); background-attachment: fixed; color: #202124; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px 15px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
-        .container { max-width: 640px; width: 100%; display: flex; flex-direction: column; gap: 16px; }
+        
+        body {
+            /* 鬱金香色漸層背景 */
+            background: linear-gradient(135deg, #fff0eb, #ffdcd1, #ffc4b3);
+            background-attachment: fixed;
+            color: #202124;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+            padding: 20px 15px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            overflow-x: hidden;
+        }
+
+        /* 頁面切換動畫 */
+        .page-section {
+            display: none;
+            width: 100%;
+            max-width: 640px;
+            animation: fadeIn 0.4s ease;
+        }
+        .page-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 首頁 (迎賓頁面) --- */
+        #homePage {
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh; /* 佔據大部分螢幕高度 */
+            gap: 40px; /* Logo 與按鈕的距離 */
+        }
+
+        .home-logo {
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(240, 128, 128, 0.2); /* 給 Logo 一點陰影點綴 */
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #ff8c69, #f08080); 
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 30px; 
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            letter-spacing: 2px;
+            box-shadow: 0 6px 20px rgba(240, 128, 128, 0.4);
+        }
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(240, 128, 128, 0.5);
+        }
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        /* --- 投稿頁面 --- */
+        .container { width: 100%; display: flex; flex-direction: column; gap: 16px; }
+        
         .logo-display { width: 100%; display: flex; justify-content: center; margin-bottom: 10px; }
         .logo-display img { width: 100%; max-width: 350px; height: auto; border-radius: 12px; }
+        
         .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(240, 128, 128, 0.15); width: 100%; overflow: hidden; }
         .card-content { padding: 24px 30px; }
         .card-title { font-size: 1.5rem; text-align: center; margin-bottom: 10px; }
         .question-label { display: block; font-size: 1rem; font-weight: 500; margin-bottom: 20px; }
-        .line-textarea { width: 100%; border: none; border-bottom: 2px solid #ffc4b3; background: transparent; font-size: 1rem; padding: 8px 0; min-height: 120px; resize: none; }
+        
+        .line-textarea { 
+            width: 100%; border: none; border-bottom: 2px solid #ffc4b3; 
+            background: transparent; font-size: 1rem; padding: 8px 0; 
+            min-height: 120px; resize: none; 
+        }
         .line-textarea:focus { outline: none; border-bottom: 2px solid #f08080; }
-        .submit-btn { background: linear-gradient(45deg, #ff8c69, #f08080); color: white; border: none; padding: 16px; font-size: 1.1rem; font-weight: 600; border-radius: 25px; cursor: pointer; width: 100%; margin-top: 10px; transition: transform 0.2s; }
+        
+        .submit-btn { 
+            background: linear-gradient(45deg, #ff8c69, #f08080); 
+            color: white; border: none; padding: 16px; font-size: 1.1rem; 
+            font-weight: 600; border-radius: 25px; cursor: pointer; 
+            width: 100%; margin-top: 10px; transition: transform 0.2s; 
+        }
         .submit-btn:active { transform: scale(0.98); }
         .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 25px; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 999; }
+
+        .toast { 
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; 
+            border-radius: 25px; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 999; 
+        }
         .toast.show { opacity: 1; visibility: visible; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="logo-display">
-        <img src="logo.png" alt="Logo">
+    <!-- 首頁 (迎賓頁面) -->
+    <div id="homePage" class="page-section active">
+        <img src="logo.png" alt="Logo" class="home-logo">
+        <button class="start-btn" id="goToFormBtn">我要投稿</button>
     </div>
-    <div class="card">
-        <div class="card-content">
-            <h1 class="card-title">投稿語錄</h1>
-            <label class="question-label">請輸入要投稿的語錄</label>
-            <textarea id="quoteInput" class="line-textarea" placeholder="請輸入文字" maxlength="300"></textarea>
-        </div>
-    </div>
-    <button class="submit-btn" id="submitBtn">送出投稿</button>
-</div>
 
-<div id="toast" class="toast">投稿成功！感謝分享</div>
+    <!-- 投稿頁面 (表單) -->
+    <div id="formPage" class="page-section container">
+        <div class="logo-display">
+            <img src="logo.png" alt="Logo">
+        </div>
+        <div class="card">
+            <div class="card-content">
+                <h1 class="card-title">投稿語錄</h1>
+                <label class="question-label">請輸入要投稿的語錄</label>
+                <textarea id="quoteInput" class="line-textarea" placeholder="請輸入文字" maxlength="300"></textarea>
+            </div>
+        </div>
+        <button class="submit-btn" id="submitBtn">送出投稿</button>
+    </div>
+
+    <!-- 提示彈窗 -->
+    <div id="toast" class="toast">投稿成功！感謝分享</div>
 
 <script>
-    // 🌟 你的 jsonblob BLOB_ID 已經幫你填好了
+    // 🌟 你的 jsonblob BLOB_ID
     const BLOB_ID = '01a173d8-ef79-712c-8f71-f5164b0e3542'; 
     const API_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
 
+    // DOM 元素
+    const homePage = document.getElementById('homePage');
+    const formPage = document.getElementById('formPage');
+    const goToFormBtn = document.getElementById('goToFormBtn');
     const quoteInput = document.getElementById('quoteInput');
     const submitBtn = document.getElementById('submitBtn');
     const toastEl = document.getElementById('toast');
 
+    // 顯示提示
     function showToast(msg) {
         toastEl.textContent = msg;
         toastEl.classList.add('show');
         setTimeout(() => toastEl.classList.remove('show'), 2500);
     }
 
+    // 切換頁面邏輯
+    goToFormBtn.addEventListener('click', () => {
+        homePage.classList.remove('active');
+        setTimeout(() => {
+            formPage.classList.add('active');
+            setTimeout(() => quoteInput.focus(), 400); // 切換後自動對焦
+        }, 50);
+    });
+
+    // 送出表單
     submitBtn.addEventListener('click', async function() {
         const text = quoteInput.value.trim();
         if (!text) {
@@ -67,12 +178,12 @@
         submitBtn.textContent = '傳送中...';
 
         try {
-            // 1. 先取得雲端最新的資料
+            // 1. 取得雲端最新資料
             const getRes = await fetch(API_URL);
             let currentQuotes = await getRes.json();
             if (!Array.isArray(currentQuotes)) currentQuotes = []; 
 
-            // 2. 加入新的投稿
+            // 2. 加入新投稿
             const newQuote = {
                 id: Date.now().toString(),
                 text: text,
@@ -80,18 +191,28 @@
             };
             currentQuotes.push(newQuote);
 
-            // 3. 將更新後的資料寫回 jsonblob (使用 PUT 覆蓋)
-            await fetch(API_URL, {
+            // 3. 寫回 jsonblob (加上 mode: 'cors' 確保跨域成功)
+            const putRes = await fetch(API_URL, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                mode: 'cors',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
                 body: JSON.stringify(currentQuotes)
             });
+
+            if (!putRes.ok) throw new Error('寫入失敗');
 
             // 成功
             quoteInput.value = '';
             showToast('投稿成功！');
+            
+            // 可選：送出後切換回迎賓首頁 (如果你想的話，可以把下面這行取消註解)
+            // homePage.classList.add('active'); formPage.classList.remove('active');
+
         } catch (error) {
-            console.error(error);
+            console.error('詳細錯誤:', error);
             showToast('網路錯誤，請稍後再試');
         } finally {
             submitBtn.disabled = false;
