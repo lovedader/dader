@@ -42,8 +42,9 @@
 <div id="toast" class="toast">投稿成功！感謝分享</div>
 
 <script>
-    // 🌟 這是你的 npoint 資料庫網址
-    const API_URL = 'https://api.npoint.io/cbb633f20d6850328ead';
+    // 🌟 你的 jsonblob BLOB_ID 已經幫你填好了
+    const BLOB_ID = '01a173d8-ef79-712c-8f71-f5164b0e3542'; 
+    const API_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
 
     const quoteInput = document.getElementById('quoteInput');
     const submitBtn = document.getElementById('submitBtn');
@@ -79,9 +80,9 @@
             };
             currentQuotes.push(newQuote);
 
-            // 3. 將更新後的資料寫回 npoint
+            // 3. 將更新後的資料寫回 jsonblob (使用 PUT 覆蓋)
             await fetch(API_URL, {
-                method: 'POST',
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(currentQuotes)
             });
