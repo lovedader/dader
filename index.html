@@ -6,32 +6,14 @@
     <title>情感語錄 - 投稿</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            background: linear-gradient(135deg, #fff0eb, #ffdcd1, #ffc4b3);
-            background-attachment: fixed;
-            color: #202124;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            width: 100%;
-            padding: 20px 15px;
-            padding-bottom: calc(20px + env(safe-area-inset-bottom));
-            overflow-x: hidden;
-        }
-
+        body { background: linear-gradient(135deg, #fff0eb, #ffdcd1, #ffc4b3); background-attachment: fixed; color: #202124; display: flex; flex-direction: column; align-items: center; min-height: 100vh; width: 100%; padding: 20px 15px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); overflow-x: hidden; }
         .page-section { display: none; width: 100%; max-width: 640px; }
         .page-section.active { display: flex; flex-direction: column; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- 首頁 --- */
         #homePage { justify-content: center; align-items: center; min-height: 75vh; gap: 40px; }
         .home-logo { width: 100%; max-width: 350px; height: auto; object-fit: contain; border-radius: 12px; }
         .start-btn { background: linear-gradient(45deg, #ff8c69, #f08080); color: white; border: none; padding: 16px 48px; font-size: 1.2rem; font-weight: 600; border-radius: 30px; cursor: pointer; transition: transform 0.2s; letter-spacing: 2px; box-shadow: 0 6px 20px rgba(240, 128, 128, 0.4); }
         .start-btn:active { transform: scale(0.95); }
-
-        /* --- 表單 --- */
         .logo-display { width: 100%; display: flex; justify-content: center; margin-bottom: 15px; }
         .logo-display img { width: 100%; max-width: 350px; height: auto; border-radius: 12px; }
         .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(240, 128, 128, 0.15); width: 100%; overflow: hidden; }
@@ -43,7 +25,6 @@
         .submit-btn { background: linear-gradient(45deg, #ff8c69, #f08080); color: white; border: none; padding: 16px; font-size: 1.1rem; font-weight: 600; border-radius: 25px; cursor: pointer; width: 100%; margin-top: 10px; transition: transform 0.2s; }
         .submit-btn:active { transform: scale(0.98); }
         .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 25px; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 999; }
         .toast.show { opacity: 1; visibility: visible; }
     </style>
@@ -70,8 +51,8 @@
     <div id="toast" class="toast">投稿成功！感謝分享</div>
 
 <script>
-    // 🌟 新的免費資料庫網址 (無需註冊，支援直接寫入)
-    const API_URL = 'https://json.extendsclass.com/bin/01a173d8ef79';
+    // 🌟 你的 crudcrud 專屬網址
+    const API_URL = 'https://crudcrud.com/api/7fc65a7e934c4e50985a9c94c7d1e2b9/quotes';
 
     const homePage = document.getElementById('homePage');
     const formPage = document.getElementById('formPage');
@@ -100,23 +81,17 @@
         submitBtn.textContent = '傳送中...';
 
         try {
-            // 1. 取得最新資料 (若為空陣列，會回傳空陣列)
-            const getRes = await fetch(API_URL);
-            let currentQuotes = await getRes.json();
-            if (!Array.isArray(currentQuotes)) currentQuotes = []; 
-
-            // 2. 加入新資料
-            const newQuote = { id: Date.now().toString(), text: text, timestamp: Date.now() };
-            currentQuotes.push(newQuote);
-
-            // 3. 寫回雲端
-            const putRes = await fetch(API_URL, {
-                method: 'PUT',
+            // 🚀 直接 POST 寫入單筆資料
+            const postRes = await fetch(API_URL, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(currentQuotes)
+                body: JSON.stringify({ 
+                    text: text, 
+                    timestamp: Date.now() 
+                })
             });
 
-            if (!putRes.ok) throw new Error('寫入失敗');
+            if (!postRes.ok) throw new Error('寫入失敗');
 
             quoteInput.value = '';
             showToast('投稿成功！');
