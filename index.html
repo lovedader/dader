@@ -33,6 +33,9 @@
         .footer-stats { font-size: 0.8rem; color: #888; display: flex; align-items: center; gap: 6px; }
         .blink-green { width: 8px; height: 8px; background-color: #2ecc71; border-radius: 50%; display: inline-block; animation: blinkGreen 1.5s infinite ease-in-out; box-shadow: 0 0 5px #2ecc71; }
         @keyframes blinkGreen { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(0.8); } }
+        
+        /* 隱藏表單與 iframe */
+        iframe, form#googleForm { display: none !important; }
     </style>
 </head>
 <body>
@@ -65,10 +68,13 @@
         </div>
     </div>
 
-<script>
-    // 🌟 這裡填入你的 Apps Script 網址
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwTOMHRRzgQ3Yq81JPt3EXSp5mC-qvjKO5TMa95ogI54QsSv26fAPXIWtulEM18FHE0/exec';
+    <!-- 🌟 隱藏的 Google 表單 iframe 與 Form -->
+    <iframe name="hidden_iframe" id="hidden_iframe"></iframe>
+    <form id="googleForm" action="https://docs.google.com/forms/d/e/1FAIpQLSdK1l8htg-7R-ylg_0nC4FaBCMPeMu15yqic4DiWBC34H8TAg/formResponse" method="POST" target="hidden_iframe">
+        <input type="text" name="entry.123456789" id="formInput">
+    </form>
 
+<script>
     // 處理總瀏覽次數
     let total_views = parseInt(localStorage.getItem('total_views') || '0');
     total_views += 1;
@@ -81,6 +87,10 @@
     const quoteInput = document.getElementById('quoteInput');
     const submitBtn = document.getElementById('submitBtn');
     const toastEl = document.getElementById('toast');
+    const googleForm = document.getElementById('googleForm');
+    const formInput = document.getElementById('formInput');
+    
+    let submitted = false;
 
     function showToast(msg) {
         toastEl.textContent = msg;
@@ -88,38 +98,59 @@
         setTimeout(() => toastEl.classList.remove('show'), 2500);
     }
 
+    // 🚀 自動抓取 entry ID (這樣你就不用自己找)
+    async function fetchEntryId() {
+        try {
+            const res = await fetch('https://docs.google.com/forms/d/e/1FAIpQLSdK1l8htg-7R-ylg_0nC4FaBCMPeMu15yqic4DiWBC34H8TAg/viewform');
+            const html = await res.text();
+            const match = html.match(/name="(entry\.\d+)"/);
+            if (match && match[1]) {
+                formInput.name = match[1]; 
+                console.log('成功抓取到 entry ID:', match[1]);
+            }
+        } catch (error) {
+            console.error('抓取 ID 失敗', error);
+        }
+    }
+    fetchEntryId();
+
+    // 當 iframe 載入完成 (代表 Google 表單已成功接收)
+    document.getElementById('hidden_iframe').onload = function() {
+        if (submitted) {
+            showToast('投稿成功！');
+            submitted = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = '送出投稿';
+        }
+    };
+
     goToFormBtn.addEventListener('click', () => {
         homePage.classList.remove('active');
         formPage.classList.add('active');
         setTimeout(() => quoteInput.focus(), 300);
     });
 
-    // 🚀 使用 fetch 直接發送 POST 請求給 Google
-    submitBtn.addEventListener('click', async function() {
+    submitBtn.addEventListener('click', function() {
         const text = quoteInput.value.trim();
         if (!text) { alert("請填寫投稿語錄！"); return; }
 
         submitBtn.disabled = true;
         submitBtn.textContent = '傳送中...';
+        submitted = true;
 
-        try {
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text })
-            });
+        formInput.value = text;
+        googleForm.submit();
 
-            if (!res.ok) throw new Error('傳送失敗');
-
-            quoteInput.value = '';
-            showToast('投稿成功！');
-        } catch (error) {
-            console.error(error);
-            showToast('網路錯誤，請稍後再試');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = '送出投稿';
-        }
+        // 保險機制：如果 3 秒內沒觸發 onload，強制恢復按鈕
+        setTimeout(() => {
+            if (submitted) {
+                quoteInput.value = '';
+                submitBtn.disabled = false;
+                submitBtn.textContent = '送出投稿';
+                showToast('投稿已送出！');
+                submitted = false;
+            }
+        }, 3000);
     });
 </script>
 </body>
