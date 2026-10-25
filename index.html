@@ -6,14 +6,31 @@
     <title>情感語錄 - 投稿</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: linear-gradient(135deg, #fff0eb, #ffdcd1, #ffc4b3); background-attachment: fixed; color: #202124; display: flex; flex-direction: column; align-items: center; min-height: 100vh; width: 100%; padding: 20px 15px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); overflow-x: hidden; }
+        
+        body { 
+            background: linear-gradient(135deg, #fff0eb, #ffdcd1, #ffc4b3); 
+            background-attachment: fixed; 
+            color: #202124; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            width: 100%; 
+            padding: 20px 15px; 
+            /* 預留底部空間，避免內容被固定欄位擋住 */
+            padding-bottom: calc(80px + env(safe-area-inset-bottom)); 
+            overflow-x: hidden; 
+        }
+        
         .page-section { display: none; width: 100%; max-width: 640px; }
         .page-section.active { display: flex; flex-direction: column; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #homePage { justify-content: center; align-items: center; min-height: 75vh; gap: 40px; }
+        
+        #homePage { justify-content: center; align-items: center; min-height: 70vh; gap: 40px; }
         .home-logo { width: 100%; max-width: 350px; height: auto; object-fit: contain; border-radius: 12px; }
         .start-btn { background: linear-gradient(45deg, #ff8c69, #f08080); color: white; border: none; padding: 16px 48px; font-size: 1.2rem; font-weight: 600; border-radius: 30px; cursor: pointer; transition: transform 0.2s; letter-spacing: 2px; box-shadow: 0 6px 20px rgba(240, 128, 128, 0.4); }
         .start-btn:active { transform: scale(0.95); }
+        
         .logo-display { width: 100%; display: flex; justify-content: center; margin-bottom: 15px; }
         .logo-display img { width: 100%; max-width: 350px; height: auto; border-radius: 12px; }
         .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(240, 128, 128, 0.15); width: 100%; overflow: hidden; }
@@ -25,12 +42,60 @@
         .submit-btn { background: linear-gradient(45deg, #ff8c69, #f08080); color: white; border: none; padding: 16px; font-size: 1.1rem; font-weight: 600; border-radius: 25px; cursor: pointer; width: 100%; margin-top: 10px; transition: transform 0.2s; }
         .submit-btn:active { transform: scale(0.98); }
         .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 25px; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 999; }
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 25px; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 999; }
         .toast.show { opacity: 1; visibility: visible; }
         
-        /* 🌟 這裡把隱藏的 iframe 和 form 徹底隱藏起來 */
-        iframe, form#googleForm { 
-            display: none !important; 
+        /* 隱藏表單與 iframe */
+        iframe, form#googleForm { display: none !important; }
+
+        /* 🌟 底部固定版權列 */
+        .bottom-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85); /* 半透明白色背景 */
+            backdrop-filter: blur(10px); /* 毛玻璃效果 */
+            -webkit-backdrop-filter: blur(10px);
+            padding: 12px 10px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .footer-text {
+            font-size: 0.85rem;
+            color: #7c6256;
+            font-weight: 500;
+        }
+
+        .footer-stats {
+            font-size: 0.8rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 🌟 綠色一閃一閃的指示燈 */
+        .blink-green {
+            width: 8px;
+            height: 8px;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            display: inline-block;
+            animation: blinkGreen 1.5s infinite ease-in-out;
+            box-shadow: 0 0 5px #2ecc71;
+        }
+
+        @keyframes blinkGreen {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.2; transform: scale(0.8); }
         }
     </style>
 </head>
@@ -56,14 +121,31 @@
     <!-- 隱藏的 Google 表單 iframe -->
     <iframe name="hidden_iframe" id="hidden_iframe"></iframe>
     
-    <!-- 🌟 隱藏的表單，用來將資料送到 Google -->
+    <!-- 隱藏的表單 -->
     <form id="googleForm" action="https://docs.google.com/forms/d/e/1FAIpQLSdK1l8htg-7R-ylg_0nC4FaBCMPeMu15yqic4DiWBC34H8TAg/formResponse" method="POST" target="hidden_iframe">
         <input type="text" name="entry.123456789" id="formInput">
     </form>
 
     <div id="toast" class="toast"></div>
 
+    <!-- 🌟 底部固定版權列 -->
+    <div class="bottom-footer">
+        <div class="footer-text">𝒍𝒐𝒗𝒆_𝒅𝒂𝒅𝒆𝒓情感語錄版製作</div>
+        <div class="footer-stats">
+            <span>📊</span> 
+            <span>總瀏覽次數：<span id="total_views">0</span></span>
+            <span class="blink-green"></span>
+        </div>
+    </div>
+
 <script>
+    // 🌟 處理總瀏覽次數 (使用 localStorage 記錄)
+    let total_views = parseInt(localStorage.getItem('total_views') || '0');
+    total_views += 1; // 每次載入網頁就 +1
+    localStorage.setItem('total_views', total_views);
+    document.getElementById('total_views').textContent = total_views;
+
+    // --- 以下為原本的投稿邏輯 ---
     const homePage = document.getElementById('homePage');
     const formPage = document.getElementById('formPage');
     const goToFormBtn = document.getElementById('goToFormBtn');
@@ -75,7 +157,7 @@
     
     let submitted = false;
 
-    // 🚀 自動抓取 entry ID 的邏輯
+    // 🚀 自動抓取 entry ID
     async function fetchEntryId() {
         try {
             const res = await fetch('https://docs.google.com/forms/d/e/1FAIpQLSdK1l8htg-7R-ylg_0nC4FaBCMPeMu15yqic4DiWBC34H8TAg/viewform');
@@ -83,11 +165,8 @@
             const match = html.match(/name="(entry\.\d+)"/);
             
             if (match && match[1]) {
-                const entryId = match[1];
-                console.log('成功抓取到 entry ID:', entryId);
-                formInput.name = entryId; 
-            } else {
-                console.warn('找不到 entry ID，將使用預設值。');
+                formInput.name = match[1]; 
+                console.log('成功抓取到 entry ID:', match[1]);
             }
         } catch (error) {
             console.error('自動取得 entry ID 失敗:', error);
