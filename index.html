@@ -27,6 +27,8 @@
         .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
         .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 25px; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 999; }
         .toast.show { opacity: 1; visibility: visible; }
+        /* 隱藏 iframe */
+        iframe { display: none; }
     </style>
 </head>
 <body>
@@ -47,19 +49,54 @@
         </div>
         <button class="submit-btn" id="submitBtn">送出投稿</button>
     </div>
+    
+    <!-- 隱藏的 Google 表單 iframe -->
+    <iframe name="hidden_iframe" id="hidden_iframe"></iframe>
+    
+    <!-- 🌟 我已經把你的表單網址填好了 -->
+    <form id="googleForm" action="https://docs.google.com/forms/d/e/1FAIpQLSdK1l8htg-7R-ylg_0nC4FaBCMPeMu15yqic4DiWBC34H8TAg/formResponse" method="POST" target="hidden_iframe">
+        <!-- 這裡的 name 我會用 JavaScript 自動替換成正確的 entry ID -->
+        <input type="text" name="entry.123456789" id="formInput">
+    </form>
 
-    <div id="toast" class="toast">投稿成功！感謝分享</div>
+    <div id="toast" class="toast"></div>
 
 <script>
-    // 🌟 你的 crudcrud 專屬網址
-    const API_URL = 'https://crudcrud.com/api/7fc65a7e934c4e50985a9c94c7d1e2b9/quotes';
-
     const homePage = document.getElementById('homePage');
     const formPage = document.getElementById('formPage');
     const goToFormBtn = document.getElementById('goToFormBtn');
     const quoteInput = document.getElementById('quoteInput');
     const submitBtn = document.getElementById('submitBtn');
     const toastEl = document.getElementById('toast');
+    const googleForm = document.getElementById('googleForm');
+    const formInput = document.getElementById('formInput');
+    
+    let submitted = false;
+
+    // 🚀 自動抓取 entry ID 的邏輯
+    async function fetchEntryId() {
+        try {
+            // 去抓取表單的原始碼
+            const res = await fetch('https://docs.google.com/forms/d/e/1FAIpQLSdK1l8htg-7R-ylg_0nC4FaBCMPeMu15yqic4DiWBC34H8TAg/viewform');
+            const html = await res.text();
+            
+            // 使用正則表達式尋找 entry.xxxxx
+            const match = html.match(/name="(entry\.\d+)"/);
+            
+            if (match && match[1]) {
+                const entryId = match[1];
+                console.log('成功抓取到 entry ID:', entryId);
+                formInput.name = entryId; // 替換掉預設的假 ID
+            } else {
+                console.warn('找不到 entry ID，將使用預設值。');
+            }
+        } catch (error) {
+            console.error('自動取得 entry ID 失敗:', error);
+        }
+    }
+
+    // 頁面載入時立刻去抓 ID
+    fetchEntryId();
 
     function showToast(msg) {
         toastEl.textContent = msg;
@@ -67,41 +104,39 @@
         setTimeout(() => toastEl.classList.remove('show'), 2500);
     }
 
+    // 當 iframe 載入完成（代表表單送出成功）
+    document.getElementById('hidden_iframe').onload = function() {
+        if (submitted) {
+            showToast('投稿成功！');
+            submitted = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = '送出投稿';
+        }
+    };
+
     goToFormBtn.addEventListener('click', () => {
         homePage.classList.remove('active');
         formPage.classList.add('active');
         setTimeout(() => quoteInput.focus(), 300);
     });
 
-    submitBtn.addEventListener('click', async function() {
+    submitBtn.addEventListener('click', function() {
         const text = quoteInput.value.trim();
         if (!text) { alert("請填寫投稿語錄！"); return; }
 
         submitBtn.disabled = true;
         submitBtn.textContent = '傳送中...';
+        submitted = true;
 
-        try {
-            // 🚀 直接 POST 寫入單筆資料
-            const postRes = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    text: text, 
-                    timestamp: Date.now() 
-                })
-            });
+        formInput.value = text;
+        googleForm.submit();
 
-            if (!postRes.ok) throw new Error('寫入失敗');
-
+        // 備用計時器（如果 iframe 沒觸發）
+        setTimeout(() => {
             quoteInput.value = '';
-            showToast('投稿成功！');
-        } catch (error) {
-            console.error('詳細錯誤:', error);
-            showToast('網路錯誤，請稍後再試');
-        } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = '送出投稿';
-        }
+        }, 3000);
     });
 </script>
 </body>
