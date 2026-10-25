@@ -22,16 +22,16 @@
             overflow-x: hidden;
         }
 
-        /* 頁面切換動畫 */
+        /* 頁面切換機制：預設隱藏，加上 active 才顯示 */
         .page-section {
             display: none;
             width: 100%;
             max-width: 640px;
-            animation: fadeIn 0.4s ease;
         }
         .page-section.active {
             display: flex;
             flex-direction: column;
+            animation: fadeIn 0.3s ease;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -42,8 +42,8 @@
         #homePage {
             justify-content: center;
             align-items: center;
-            min-height: 80vh; /* 佔據大部分螢幕高度 */
-            gap: 40px; /* Logo 與按鈕的距離 */
+            min-height: 75vh; /* 置中對齊 */
+            gap: 40px; 
         }
 
         .home-logo {
@@ -52,7 +52,6 @@
             height: auto;
             object-fit: contain;
             border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(240, 128, 128, 0.2); /* 給 Logo 一點陰影點綴 */
         }
 
         .start-btn {
@@ -64,22 +63,14 @@
             font-weight: 600;
             border-radius: 30px; 
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
             letter-spacing: 2px;
             box-shadow: 0 6px 20px rgba(240, 128, 128, 0.4);
         }
-        .start-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(240, 128, 128, 0.5);
-        }
-        .start-btn:active {
-            transform: translateY(0);
-        }
+        .start-btn:active { transform: scale(0.95); }
 
-        /* --- 投稿頁面 --- */
-        .container { width: 100%; display: flex; flex-direction: column; gap: 16px; }
-        
-        .logo-display { width: 100%; display: flex; justify-content: center; margin-bottom: 10px; }
+        /* --- 表單頁面 --- */
+        .logo-display { width: 100%; display: flex; justify-content: center; margin-bottom: 15px; }
         .logo-display img { width: 100%; max-width: 350px; height: auto; border-radius: 12px; }
         
         .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 15px rgba(240, 128, 128, 0.15); width: 100%; overflow: hidden; }
@@ -119,8 +110,8 @@
         <button class="start-btn" id="goToFormBtn">我要投稿</button>
     </div>
 
-    <!-- 投稿頁面 (表單) -->
-    <div id="formPage" class="page-section container">
+    <!-- 表單頁面 -->
+    <div id="formPage" class="page-section">
         <div class="logo-display">
             <img src="logo.png" alt="Logo">
         </div>
@@ -138,11 +129,9 @@
     <div id="toast" class="toast">投稿成功！感謝分享</div>
 
 <script>
-    // 🌟 你的 jsonblob BLOB_ID
-    const BLOB_ID = '01a173d8-ef79-712c-8f71-f5164b0e3542'; 
-    const API_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
+    // 🌟 你的 npoint 資料庫網址
+    const API_URL = 'https://api.npoint.io/cbb633f20d6850328ead';
 
-    // DOM 元素
     const homePage = document.getElementById('homePage');
     const formPage = document.getElementById('formPage');
     const goToFormBtn = document.getElementById('goToFormBtn');
@@ -150,20 +139,17 @@
     const submitBtn = document.getElementById('submitBtn');
     const toastEl = document.getElementById('toast');
 
-    // 顯示提示
     function showToast(msg) {
         toastEl.textContent = msg;
         toastEl.classList.add('show');
         setTimeout(() => toastEl.classList.remove('show'), 2500);
     }
 
-    // 切換頁面邏輯
+    // 切換頁面 (確保不會重疊)
     goToFormBtn.addEventListener('click', () => {
         homePage.classList.remove('active');
-        setTimeout(() => {
-            formPage.classList.add('active');
-            setTimeout(() => quoteInput.focus(), 400); // 切換後自動對焦
-        }, 50);
+        formPage.classList.add('active');
+        setTimeout(() => quoteInput.focus(), 300);
     });
 
     // 送出表單
@@ -191,26 +177,18 @@
             };
             currentQuotes.push(newQuote);
 
-            // 3. 寫回 jsonblob (加上 mode: 'cors' 確保跨域成功)
-            const putRes = await fetch(API_URL, {
-                method: 'PUT',
-                mode: 'cors',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
+            // 3. npoint 寫入機制：透過 POST 來覆蓋整份資料
+            const postRes = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(currentQuotes)
             });
 
-            if (!putRes.ok) throw new Error('寫入失敗');
+            if (!postRes.ok) throw new Error('寫入失敗');
 
-            // 成功
             quoteInput.value = '';
             showToast('投稿成功！');
             
-            // 可選：送出後切換回迎賓首頁 (如果你想的話，可以把下面這行取消註解)
-            // homePage.classList.add('active'); formPage.classList.remove('active');
-
         } catch (error) {
             console.error('詳細錯誤:', error);
             showToast('網路錯誤，請稍後再試');
