@@ -34,6 +34,17 @@
         .blink-green { width: 8px; height: 8px; background-color: #2ecc71; border-radius: 50%; display: inline-block; animation: blinkGreen 1.5s infinite ease-in-out; box-shadow: 0 0 5px #2ecc71; }
         @keyframes blinkGreen { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(0.8); } }
     </style>
+    
+    <!-- 🌟 OneSignal SDK (前台可訂閱) -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "bf5833e0-4e9c-4673-bd36-93bbd795f6d4",
+        });
+      });
+    </script>
 </head>
 <body>
 
@@ -68,6 +79,7 @@
 <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwTOMHRRzgQ3Yq81JPt3EXSp5mC-qvjKO5TMa95ogI54QsSv26fAPXIWtulEM18FHE0/exec';
 
+    // 總瀏覽次數
     let total_views = parseInt(localStorage.getItem('total_views') || '0');
     total_views += 1;
     localStorage.setItem('total_views', total_views);
@@ -83,7 +95,7 @@
     function showToast(msg) {
         toastEl.textContent = msg;
         toastEl.classList.add('show');
-        setTimeout(() => toastEl.classList.remove('show'), 3500);
+        setTimeout(() => toastEl.classList.remove('show'), 3000);
     }
 
     goToFormBtn.addEventListener('click', () => {
@@ -106,18 +118,13 @@
                 body: JSON.stringify({ text: text })
             });
 
-            // 🌟 把回傳的結果轉成文字並印出來看看
-            const responseText = await res.text();
-            console.log("Google 伺服器回傳：", responseText);
-
-            if (!res.ok) throw new Error(`HTTP 錯誤 ${res.status}：${responseText}`);
+            if (!res.ok) throw new Error('傳送失敗');
 
             quoteInput.value = '';
             showToast('投稿成功！');
         } catch (error) {
             console.error('詳細錯誤:', error);
-            // 🌟 如果出錯，直接把錯誤訊息顯示在畫面上
-            showToast(`錯誤：${error.message}`);
+            showToast('網路錯誤，請稍後再試');
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = '送出投稿';
