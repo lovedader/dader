@@ -28,14 +28,26 @@
         .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 25px; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 999; }
         .toast.show { opacity: 1; visibility: visible; }
         
+        /* 底部版權列 */
         .bottom-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 12px 10px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 100; }
         .footer-text { font-size: 0.85rem; color: #7c6256; font-weight: 500; }
-        .footer-stats { font-size: 0.8rem; color: #888; display: flex; align-items: center; gap: 6px; }
+        
+        /* 🌟 修改這裡：讓內容橫向排列並置中 */
+        .footer-stats { 
+            font-size: 0.8rem; 
+            color: #888; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 6px; 
+        }
+        
+        /* 🌟 綠色呼吸燈 */
         .blink-green { width: 8px; height: 8px; background-color: #2ecc71; border-radius: 50%; display: inline-block; animation: blinkGreen 1.5s infinite ease-in-out; box-shadow: 0 0 5px #2ecc71; }
         @keyframes blinkGreen { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.2; transform: scale(0.8); } }
     </style>
     
-    <!-- 🌟 OneSignal SDK (前台可訂閱) -->
+    <!-- OneSignal SDK (前台可訂閱) -->
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script>
       window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -67,12 +79,13 @@
 
     <div id="toast" class="toast"></div>
 
+    <!-- 底部版權列 -->
     <div class="bottom-footer">
         <div class="footer-text">𝒍𝒐𝒗𝒆_𝒅𝒂𝒅𝒆𝒓情感語錄版製作</div>
         <div class="footer-stats">
-            <span>📊</span> 
-            <span>總瀏覽次數：<span id="total_views">0</span></span>
+            <!-- 🌟 綠色燈放在 📊 左邊 -->
             <span class="blink-green"></span>
+            <span>📊 總瀏覽次數：<span id="total_views">0</span></span>
         </div>
     </div>
 
